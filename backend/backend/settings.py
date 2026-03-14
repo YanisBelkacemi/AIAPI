@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'communication',
     'rest_framework',
-    'User'
+    'rest_framework.authtoken',
+    'User',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # changing the authentication model by this line (THIS IS FOR U SO THAT U DONT DO SOMETHING STUPID)
 AUTH_USER_MODEL = 'User.Users'
+
+"""
+#this here is used to disable seesion authentication
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # or JWT
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # optional, set per view
+    ]
+}
+"""
+#used for Token auth
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
