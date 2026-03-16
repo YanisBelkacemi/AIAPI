@@ -1,6 +1,3 @@
-Here’s a polished GitHub README draft based on your architecture document. I’ve formatted it for clarity, markdown best practices, and developer readability:
-
----
 
 # AI Model API Platform Architecture
 
