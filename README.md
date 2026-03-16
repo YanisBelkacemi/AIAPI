@@ -198,9 +198,6 @@ Key dependencies include:
 - Password hashing is handled by Django's built-in authentication
 - User IDs are generated using the nanoid library for uniqueness
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
