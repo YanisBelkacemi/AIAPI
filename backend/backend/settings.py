@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'communication',
     'rest_framework',
+    'rest_framework_api_key',
     'rest_framework.authtoken',
     'User',
 ]
@@ -148,5 +149,8 @@ REST_FRAMEWORK = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "communication.permissions.HasAPIKey",
     ]
 }
