@@ -1,53 +1,148 @@
-  # AIAPI
-  
-  # Executive Summary
-  A Django-based platform exposes locally hosted AI models via Ollama as authenticated REST APIs. It standardizes access using OpenAI-compatible endpoints, enforces security and usage policies, and logs all interactions for observability.
-  System Architecture Overview
-  Clients call OpenAI-compatible REST endpoints. The Django app authenticates via API keys, validates payloads, proxies requests to Ollama, streams or returns responses, and logs usage. PostgreSQL stores users, API keys, and usage logs. Redis (optional) enables rate limiting and caching. The platform is containerized behind Nginx.
-  Django Application Components
-  User Management
-  Django auth for admin users; custom User or extension for roles/quotas.
-  API Key System
-  Create, rotate, revoke keys.
-  One-way hash storage; prefixes for identification.
-  Request Handling
-  DRF views/routers; async views for streaming.
-  Error normalization across endpoints.
-  Usage Tracking
-  Middleware/service logs request/response metadata, token counts, latency, status.
-  Ollama Integration Layer
-  HTTP client to local Ollama server (http://localhost:11434).
-  Model registry mapping logical model names to Ollama models.
-  Streaming support (server-sent chunks) with timeouts/retries.
-  Input/output adapters translating OpenAI format to Ollama prompts and back.
-  Database Design
-  -- usersusers(id, email, is_active, role, created_at)-- api_keysapi_keys(id, user_id FK, key_prefix, key_hash, name, scopes, revoked, created_at, last_used_at)-- usage_logsusage_logs(id, user_id FK, api_key_id FK, endpoint, model, request_id, tokens_in, tokens_out,           latency_ms, status_code, error_code, created_at, metadata JSONB)
-  Request Flow
-  Authentication: Extract API key from Authorization: Bearer.
-  Validation: DRF serializers enforce schema and quotas/scopes.
-  Dispatch: Adapt request to Ollama; handle stream or non-stream modes.
-  Response: Normalize to OpenAI schema; propagate errors.
-  Logging: Persist usage and metrics asynchronously.
-  API Design
-  POST /v1/chat/completionsPOST /v1/completionsPOST /v1/embeddingsGET  /v1/models
-  OpenAI-compatible request/response bodies with streaming via SSE (text/event-stream).
-  Security
-  API keys hashed (HMAC/Bcrypt/Argon2); only prefixes stored in clear.
-  HTTPS termination at Nginx; HSTS enabled.
-  Rate limiting per key (Redis leaky bucket).
-  Payload size limits, schema validation, allowed models list.
-  Audit logs and revocation; restricted CORS.
-  Scalability & Performance
-  Gunicorn/Uvicorn workers; async views for I/O.
-  Horizontal scale via containers; stateless app.
-  Connection pooling; response streaming; cache model lists.
-  Separate logging queue (Celery/Redis) to decouple I/O.
-  Deployment Strategy
-  Docker Compose: Nginx, Django, Postgres, Redis, Ollama.
-  CI/CD builds and migrations; health checks; environment secrets.
-  Observability: Prometheus exporters, Grafana, structured logs.
-  Technology Stack
-  Django, DRF, async views; Python httpx.
-  MYSQL, Redis, Celery (optional).
-  Nginx, Gunicorn/Uvicorn, Docker.
-  Ollama local model server.
+Here’s a polished GitHub README draft based on your architecture document. I’ve formatted it for clarity, markdown best practices, and developer readability:
+
+---
+
+# AI Model API Platform Architecture
+
+## Executive Summary
+
+This repository defines a Django-based platform that exposes locally hosted AI models (via **Ollama**) as authenticated REST APIs. It provides:
+
+* **OpenAI-compatible endpoints** for standard access.
+* **Security and usage policy enforcement** via API keys, rate limits, and payload validation.
+* **Observability**, logging all requests, responses, and usage metrics.
+
+---
+
+## System Architecture Overview
+
+* Clients call **REST endpoints** compatible with OpenAI APIs.
+* Django app:
+
+  * Authenticates requests via API keys.
+  * Validates payloads.
+  * Proxies requests to **Ollama**.
+  * Streams/returns responses.
+  * Logs all interactions for usage tracking.
+* **PostgreSQL** stores users, API keys, and usage logs.
+* **Optional Redis** for rate limiting and caching.
+* Deployed in containers behind **Nginx**.
+
+---
+
+## Django Application Components
+
+### 1. User Management
+
+* Uses Django's auth system for admin users.
+* Custom `User` model or extension to define roles and quotas.
+
+### 2. API Key System
+
+* Create, rotate, and revoke API keys.
+* Store keys as **one-way hashes**; prefixes stored for identification.
+* Define scopes and access limits per key.
+
+### 3. Request Handling
+
+* Built on **Django REST Framework (DRF)**.
+* Async views for streaming responses.
+* Normalized error handling.
+
+### 4. Usage Tracking
+
+* Middleware/service logs request/response metadata:
+
+  * Token counts
+  * Latency
+  * Status codes
+  * Errors
+
+---
+
+## Ollama Integration Layer
+
+* HTTP client connects to local Ollama server (e.g., `http://localhost:11434`).
+* Model registry maps logical names to Ollama models.
+* Supports streaming with **SSE** and handles timeouts/retries.
+* Input/output adapters convert between OpenAI and Ollama formats.
+
+---
+
+## Database Design
+
+**Tables:**
+
+* `users(id, email, is_active, role, created_at)`
+* `api_keys(id, user_id FK, key_prefix, key_hash, name, scopes, revoked, created_at, last_used_at)`
+* `usage_logs(id, user_id FK, api_key_id FK, endpoint, model, request_id, tokens_in, tokens_out, latency_ms, status_code, error_code, created_at, metadata JSONB)`
+
+---
+
+## Request Flow
+
+1. **Authentication:** Extract API key (`Authorization: Bearer <key>`).
+2. **Validation:** DRF serializers enforce schema and quotas/scopes.
+3. **Dispatch:** Adapt request to Ollama; handle streaming/non-streaming.
+4. **Response:** Normalize to OpenAI schema; propagate errors.
+5. **Logging:** Persist usage metrics asynchronously.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint               | Description                        |
+| ------ | ---------------------- | ---------------------------------- |
+| POST   | `/v1/chat/completions` | OpenAI-compatible chat completions |
+| POST   | `/v1/completions`      | OpenAI-compatible completions      |
+| POST   | `/v1/embeddings`       | Generate embeddings                |
+| GET    | `/v1/models`           | List available models              |
+
+* Streaming supported via `text/event-stream`.
+
+---
+
+## Security
+
+* API keys hashed with **HMAC/Bcrypt/Argon2**; only prefixes stored in plaintext.
+* HTTPS termination at Nginx with **HSTS**.
+* Rate limiting per key using Redis leaky bucket.
+* Payload size limits, schema validation, allowed models list.
+* Audit logs, revocation, and restricted CORS.
+
+---
+
+## Scalability & Performance
+
+* Async views with **Gunicorn/Uvicorn workers**.
+* Horizontal scaling via containerized deployment.
+* Connection pooling, streaming, caching for model lists.
+* Separate logging queue using **Celery/Redis** for decoupled I/O.
+
+---
+
+## Deployment Strategy
+
+* **Docker Compose** for Nginx, Django, Postgres, Redis, Ollama.
+* CI/CD pipelines for builds and migrations.
+* Health checks and environment secrets management.
+* Observability:
+
+  * Prometheus exporters
+  * Grafana dashboards
+  * Structured logs
+
+---
+
+## Technology Stack
+
+* **Backend:** Django, DRF, async views, Python `httpx`.
+* **Database:** PostgreSQL, Redis (optional), Celery (optional).
+* **Server:** Nginx, Gunicorn/Uvicorn, Docker.
+* **AI Models:** Ollama local model server.
+
+---
+
+If you want, I can also create a **visual diagram of this architecture** suitable for embedding in the README, so it’s easier for developers to grasp the workflow at a glance.
+
+Do you want me to make that diagram?
