@@ -22,3 +22,8 @@ class APIkeyserializer(serializers.ModelSerializer):
             revoked = False,
         )
         return apikey
+    
+class APIKeyValidation(serializers.ModelSerializer):
+    class Meta():
+        model = ApiKeys
+        fields = ['key_hash']

@@ -6,6 +6,7 @@ def prompting(prompt):
 #exmaple of the payload :
     #{'model' : 'tinyllama' , 'prompt' : prompt, 'stream' : False}
 
-    resp = requests.post(url , json=payload, stream=False)
-    response = resp.json()['response']
-    return response
+
+    resp = requests.post(url , json=payload , stream=False)
+    response = resp.json()
+
