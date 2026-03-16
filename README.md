@@ -201,7 +201,23 @@ Key dependencies include:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+**PROPRIETARY LICENSE - All Rights Reserved**
+
+Copyright © 2026 Yanis Belkacemi
+
+This software and associated documentation files (the "Software") are proprietary and confidential. Unauthorized access, copying, modification, reproduction, distribution, or use of this Software, in whole or in part, without explicit written permission from the copyright holder is strictly prohibited.
+
+**You may NOT:**
+- Copy, modify, or create derivative works
+- Distribute, sell, sublicense, or lease the Software
+- Use the Software for any commercial or non-commercial purpose without permission
+- Reverse engineer, decompile, or attempt to derive source code
+- Remove or alter any proprietary notices
+
+**Permission to View:**
+You are granted permission only to view this repository for educational purposes. All other rights are reserved.
+
+For licensing inquiries or permission requests, please contact the author.
 
 ## 👤 Author
 
