@@ -8,6 +8,8 @@ from User.models import Users
 from .permissions import HasAPIKey
 from .models import ApiKeys
 import requests
+from rest_framework import status
+from django.contrib.auth.hashers import make_password , check_password
 # Create your views here.
 
 class ApiKeyCreation(APIView):
@@ -20,25 +22,28 @@ class ApiKeyCreation(APIView):
             Owner = Users.objects.get(id = APItoken.user.id)
             return Response({
                 'Name' : APItoken.name,
-                "key" : APItoken.key_hash,
-                #'owner' : Users.objects.get(id = APItoken.user_id.
+                "key" : APItoken.raw_key,
                 "Owner" : Owner.username,
                 'UserInputID': Owner.UserInputID + ' (This is used for using the API key)'
-
-            })
-        return Response({"error" : APIkey.error, 'name' : APIkey.data})
+            },  status=status.HTTP_201_CREATED,)
+        return Response({"error" : APIkey.errors }, status=status.HTTP_400_BAD_REQUEST)
     
 class ModelAccess(APIView):
     permission_classes=[HasAPIKey]
     def post(self, request):
+        #getting the API from the header
         API = request.headers.get("Api-Key")
-        Apimodel = ApiKeys.objects.filter(key_hash = API).first()
-        if Apimodel:
-            url = 'http://127.0.0.1:8000/output'
-            resp = requests.post(url ,
-                                 json = request.data,
-                                  proxies={"http": None, "https": None} )
-            data =resp.json()
-            return Response(data)
-        return Response({'response' : str(API)})
+        for Apimodel in ApiKeys.objects.filter( revoked = False , is_active = True):
+            if check_password(API , Apimodel.key_hash):
+                    #accessing the Middleware if the ApiKay is valid
+                    url = 'http://127.0.0.1:8000/output'
+                    try :
+                        resp = requests.post(url ,
+                                            json = request.data,
+                                            proxies={"http": None, "https": None})
+                        data =resp.json()
+                        return Response(data)
+                    except requests.exceptions.RequestException:
+                        return Response({'Exception' : 'Service unavailable'}, status=501)
+        return Response({'error' : 'Your API key is not active' }, status=401)
         

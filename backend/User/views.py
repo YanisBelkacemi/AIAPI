@@ -55,7 +55,12 @@ class logout_view(APIView):
     
     def post(self , request):
         request.user.auth_token.delete()
-        return Response({
+        try : 
+            return Response({
             'response' : 'user successfully disconnected'
-        })
+            })
+        except:
+                        return Response({
+            'Error' : "An error has occured"
+            })
 

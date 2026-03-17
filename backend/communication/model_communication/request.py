@@ -9,4 +9,4 @@ def prompting(prompt):
 
     resp = requests.post(url , json=payload , stream=False)
     response = resp.json()
-
+    return response
