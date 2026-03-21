@@ -8,8 +8,7 @@ from django.utils.decorators import method_decorator
 from .serializer import UserSerializer , LoginSerializer
 from rest_framework.authtoken.models import Token
 #usual
-from django.contrib.auth import authenticate, login as loginf , logout
-from .models import Users
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 

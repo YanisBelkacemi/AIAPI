@@ -1,15 +1,16 @@
-from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from . import utils
-from rest_framework.permissions import IsAuthenticated , AllowAny
-from .serializer import APIkeyserializer , APIKeyValidation
+from rest_framework.permissions import IsAuthenticated
+from .serializer import APIkeyserializer 
 from User.models import Users
 from .permissions import HasAPIKey
 from .models import ApiKeys
 import requests
 from rest_framework import status
-from django.contrib.auth.hashers import make_password , check_password
+from django.contrib.auth.hashers import check_password
+from .throttles import QuotaLimitting
+from .services.redis_client import Token_daily
 # Create your views here.
 
 class ApiKeyCreation(APIView):
@@ -30,6 +31,7 @@ class ApiKeyCreation(APIView):
     
 class ModelAccess(APIView):
     permission_classes=[HasAPIKey]
+    throttle_classes = [QuotaLimitting]
     def post(self, request):
         #getting the API from the header
         API = request.headers.get("Api-Key")
@@ -42,7 +44,7 @@ class ModelAccess(APIView):
                                             json = request.data,
                                             proxies={"http": None, "https": None})
                         data =resp.json()
-                        return Response(data)
+                        return Response({ 'Tokens' : Token_daily(API) ,'data' : data})
                     except requests.exceptions.RequestException:
                         return Response({'Exception' : 'Service unavailable'}, status=501)
         return Response({'error' : 'Your API key is not active' }, status=401)
