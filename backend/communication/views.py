@@ -40,8 +40,17 @@ class ModelAccess(APIView):
                     #accessing the Middleware if the ApiKay is valid
                     url = 'http://127.0.0.1:8000/output'
                     try :
+                        context = { "user" : request.user.username,
+                                    "model" : request.data["model"] ,
+                                    "prompt" : f"Summarize in 10 words:{request.data['prompt']}",
+                                    "stream" : False,
+                                    "options": {
+                                                "num_predict": 30,
+                                                "temperature": 0.4,
+                                                "num_ctx": 1024
+                                                }}
                         resp = requests.post(url ,
-                                            json = request.data,
+                                            json = context,
                                             proxies={"http": None, "https": None})
                         data =resp.json()
                         return Response({ 'Tokens' : Token_daily(API) ,'data' : data})
